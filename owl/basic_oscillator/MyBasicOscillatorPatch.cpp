@@ -22,29 +22,38 @@
 
 #include "basicmaths.h"
 
-void MyBasicOscillatorPatch::_handle_parameters() {
+namespace {
+
+// Values from AudioBuffer must be scaled by kVoltConst to get volts
+constexpr float kVoltConst = - 12.0; // (-0.08) ^ -1
+
+} // anonymous namespace
+
+void MyBasicOscillatorPatch::_handle_parameters(float left_voltage) {
     // Set the frequency from the first parameter
     float freq;
 
-
     // https://gahlorddewald.com/hz-to-cv.html
     constexpr float kBaseTuning = 440.0;
-    constexpr float kLowestOctave = 8.0;
+    constexpr float kOctaveAdjust = -5.0;
     //constexpr float kFrequencyMultiplier = 2.0;
-    constexpr float kAdjustment = 0.66;
+    constexpr float kAdjustment = 0.0;
 
-    freq = (kBaseTuning / kLowestOctave) * fast_exp2f(getParameterValue(PARAMETER_A) + kAdjustment);
-
-    _oscillator->setFrequency(freq);
+    freq = kBaseTuning * fast_exp2f(kOctaveAdjust + getParameterValue(PARAMETER_A) + kAdjustment + left_voltage);
+    _oscillator_left->setFrequency(freq);
 }
 
 void MyBasicOscillatorPatch::processAudio(AudioBuffer &buffer) {
-    // Handle parameters for oscillator
-    _handle_parameters();
-
-    // Generate audio
     FloatArray left = buffer.getSamples(LEFT_CHANNEL);
     FloatArray right = buffer.getSamples(RIGHT_CHANNEL);
 
-    _oscillator->generate(left);
+    float left_voltage = calib.sampleToVolts(left[0]);
+    debugMessage("Sample (V) L", left_voltage);
+
+    // Handle parameters for oscillator
+    _handle_parameters(left_voltage);
+
+    // Generate audio
+
+    _oscillator_left->generate(left);
 }

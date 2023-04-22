@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include "VoltsPerOctave.h"
 #include "Patch.h"
 #include "SquareWaveOscillator.h"
 
@@ -32,19 +33,21 @@ public:
     registerParameter(PARAMETER_D, "My Knob D");
 
     // Create / allocate all memory in the constructor
-    _oscillator = SquareWaveOscillator::create(getSampleRate());
+    _oscillator_left = SquareWaveOscillator::create(getSampleRate());
   }
 
   ~MyBasicOscillatorPatch() {
     // Delete all memory in the constructor
-    SquareWaveOscillator::destroy(_oscillator);
+    SquareWaveOscillator::destroy(_oscillator_left);
   }
  
   void processAudio(AudioBuffer &buffer) override;
 
 private:
-  SquareWaveOscillator *_oscillator;
+  SquareWaveOscillator *_oscillator_left;
+
+  VoltsPerOctave calib;
 
   // Called in processAudio to update all the parameters before generating audio
-  void _handle_parameters();
+  void _handle_parameters(float left_voltage);
 };
