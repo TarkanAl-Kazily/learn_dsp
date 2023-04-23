@@ -23,31 +23,41 @@
 #include "VoltsPerOctave.h"
 #include "Patch.h"
 #include "SquareWaveOscillator.h"
+#include "AdsrEnvelope.h"
 
 class MyBasicOscillatorPatch : public Patch {
 public:
   MyBasicOscillatorPatch() {
-    registerParameter(PARAMETER_A, "Detune Offset");
-    registerParameter(PARAMETER_B, "My Knob B");
-    registerParameter(PARAMETER_C, "My Knob C");
-    registerParameter(PARAMETER_D, "My Knob D");
+    detune = getParameter("Detune", 0.5); // A
+    attack = getFloatParameter("Attack", 0.0, 4.0, 0.0); // B
+    decay = getFloatParameter("Release", 0.0, 4.0, 0.0); // C
 
     // Create / allocate all memory in the constructor
-    _oscillator_left = SquareWaveOscillator::create(getSampleRate());
+    oscillator = SquareWaveOscillator::create(getSampleRate());
+    env = LinearAdsrEnvelope::create(getSampleRate());
   }
 
   ~MyBasicOscillatorPatch() {
     // Delete all memory in the constructor
-    SquareWaveOscillator::destroy(_oscillator_left);
+    SquareWaveOscillator::destroy(oscillator);
+    LinearAdsrEnvelope::destroy(env);
   }
  
   void processAudio(AudioBuffer &buffer) override;
 
+  void buttonChanged(PatchButtonId bid, uint16_t value, uint16_t samples) override;
+
 private:
-  SquareWaveOscillator *_oscillator_left;
+  SquareWaveOscillator *oscillator;
+
+  FloatParameter detune;
+  FloatParameter attack;
+  FloatParameter decay;
 
   VoltsPerOctave calib;
 
   // Called in processAudio to update all the parameters before generating audio
   void _handle_parameters(float left_voltage);
+
+  LinearAdsrEnvelope *env;
 };

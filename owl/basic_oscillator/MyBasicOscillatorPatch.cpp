@@ -24,36 +24,56 @@
 
 namespace {
 
-// Values from AudioBuffer must be scaled by kVoltConst to get volts
-constexpr float kVoltConst = - 12.0; // (-0.08) ^ -1
+// 
+
+
+inline float getFreqFromVoltage(float voltage) {
+    // https://gahlorddewald.com/hz-to-cv.html
+    // Base note to use for tuning (A4)
+    constexpr float kBaseTuning = 440.0;
+    // How many octaves below base note can be reached
+    constexpr float kOctaveAdjust = 5.0;
+    // Manual adjustment for the knob so C is approximately in the center
+    constexpr float kAdjustment = 0.68;
+
+    return kBaseTuning * fast_exp2f(-kOctaveAdjust + kAdjustment + voltage);
+}
 
 } // anonymous namespace
 
 void MyBasicOscillatorPatch::_handle_parameters(float left_voltage) {
-    // Set the frequency from the first parameter
-    float freq;
+    // Set the frequency from the first parameter (detune)
+    float freq = getFreqFromVoltage(left_voltage + detune);
+    oscillator->setFrequency(freq);
 
-    // https://gahlorddewald.com/hz-to-cv.html
-    constexpr float kBaseTuning = 440.0;
-    constexpr float kOctaveAdjust = -5.0;
-    //constexpr float kFrequencyMultiplier = 2.0;
-    constexpr float kAdjustment = 0.0;
-
-    freq = kBaseTuning * fast_exp2f(kOctaveAdjust + getParameterValue(PARAMETER_A) + kAdjustment + left_voltage);
-    _oscillator_left->setFrequency(freq);
+    // Update env parameters
+    env->setAttack(attack);
+    env->setRelease(decay);
 }
 
 void MyBasicOscillatorPatch::processAudio(AudioBuffer &buffer) {
     FloatArray left = buffer.getSamples(LEFT_CHANNEL);
-    FloatArray right = buffer.getSamples(RIGHT_CHANNEL);
 
     float left_voltage = calib.sampleToVolts(left[0]);
-    debugMessage("Sample (V) L", left_voltage);
 
     // Handle parameters for oscillator
     _handle_parameters(left_voltage);
 
     // Generate audio
+    oscillator->generate(left);
 
-    _oscillator_left->generate(left);
+    // Apply envelope as VCA (through convolution)
+    env->process(left, left);
+}
+
+void MyBasicOscillatorPatch::buttonChanged(PatchButtonId bid, uint16_t value, uint16_t samples) {
+    if (bid == BUTTON_A) {
+        if (value > 0) {
+            // Trigger gate off event in env, starting attack
+            env->gate(true);
+        } else {
+            // Trigger gate off event in env, starting release
+            env->gate(false);
+        }
+    }
 }
