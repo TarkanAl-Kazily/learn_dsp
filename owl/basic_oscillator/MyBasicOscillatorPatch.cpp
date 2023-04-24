@@ -48,9 +48,7 @@ inline float getFreqFromVoltage(float voltage) {
 
 } // anonymous namespace
 
-void MyBasicOscillatorPatch::_handle_parameters() {
-    float left_voltage = calib.sampleToVolts(left[0]);
-
+void MyBasicOscillatorPatch::_handle_parameters(float left_voltage) {
     // Set the frequency from the first parameter (detune)
     // Casting a parameter (detune) to a value gets its value
     float freq = getFreqFromVoltage(left_voltage + detune);
@@ -63,9 +61,10 @@ void MyBasicOscillatorPatch::_handle_parameters() {
 
 void MyBasicOscillatorPatch::processAudio(AudioBuffer &buffer) {
     FloatArray left = buffer.getSamples(LEFT_CHANNEL);
+    float left_voltage = calib.sampleToVolts(left[0]);
 
     // Handle parameters for oscillator
-    _handle_parameters();
+    _handle_parameters(left_voltage);
 
     // Generate audio
     oscillator->generate(left);

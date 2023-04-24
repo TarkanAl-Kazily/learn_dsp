@@ -96,7 +96,7 @@ class MyBasicOscillatorPatch : public Patch {
     VoltsPerOctave calib;
 
     // This is a helper function, called in processAudio, to update all parameters before generating audio
-    void _handle_parameters();
+    void _handle_parameters(float left_voltage);
 
     // This ADSR object is used to shape the module's sound in and out.
     // Only the Attack and Release stages are set to non-default values, making it a
