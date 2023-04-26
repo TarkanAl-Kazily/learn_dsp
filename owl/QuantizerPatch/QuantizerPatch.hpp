@@ -24,25 +24,33 @@ class Quantizer : public SignalProcessor {
 protected:
     static constexpr int kNumChromaticNotes = 12;
 
+    float _offset;
+
 public:
 
     /*
      * Set a user defined scale.
      */
-    //void setScale();
+    void setScale();
 
     /*
      * Set a linear offset to raise or lower the scale by (after quantizing).
      */
-    //void setOffset();
+    void setOffset(float input) {
+        _offset = quantize(input);
+    }
 
     /*
      * Take an input pitch voltage and output a quantized pitch voltage
      */
-    float process(float input) override {
+    float quantize(float input) {
         float temp = input * kNumChromaticNotes;
         int quantized = ((int) (temp + 0.5f));
         return quantized / ((float) kNumChromaticNotes);
+    }
+
+    float process(float input) override {
+        return quantize(input);
     }
 
     // https://stackoverflow.com/questions/4271245/why-do-i-get-no-matching-function-when-i-inherit-this-function
@@ -57,6 +65,18 @@ public:
     }
 };
 
+/**
+ * @brief Implements a quantizer with optional hold function.
+ *
+ * Inputs, Outputs:
+ * [In, Left] Volt/Octave input.
+ *      Expects calibration to be done for the OWL module.
+ * [Button / Trigger 1] Hold incoming signal.
+ * [Out, Left] Volt/Octave quantized output.
+ *
+ * Parameters:
+ * N/A
+ */
 class QuantizerPatch : public Patch {
 public:
 
@@ -74,4 +94,6 @@ private:
     Quantizer *quantizer;
     VoltsPerOctave calibIn;
     VoltsPerOctave calibOut;
+
+    float _last_sample;
 };
