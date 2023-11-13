@@ -22,3 +22,15 @@ class Effect:
         - Numpy array of the processed audio
         """
         pass
+
+    def process_stereo(self, audio):
+        """
+        Applies an effect to (stereo) audio.
+
+        Arguments:
+        - audio: Numpy array of samples to process
+
+        Returns:
+        - (2D) Numpy array of the processed audio
+        """
+        pass

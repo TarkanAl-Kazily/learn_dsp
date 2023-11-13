@@ -2,6 +2,7 @@ import argparse
 
 import basic_oscillator
 import distortion
+import reverb
 
 WAVS = "../wavs/"
 
@@ -22,6 +23,12 @@ def parse():
     dist.add_argument('output_audio')
     dist.add_argument('-v', '--volume', default=2.0, type=float)
     dist.set_defaults(func=distortion.main)
+
+    rvb = subparsers.add_parser("reverb", help="Apply reverb")
+    rvb.add_argument('input_audio')
+    rvb.add_argument('output_audio')
+    rvb.add_argument('--test', action="store_true")
+    rvb.set_defaults(func=reverb.main)
 
     return parser.parse_args()
 
