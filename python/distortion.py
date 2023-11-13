@@ -3,6 +3,9 @@
 import wave
 import numpy as np
 
+from common.effect import Effect
+from common.utils import read_from_wav
+
 _sample_rate = 44100
 
 _BLOCK_SIZE = 2 ** 12
@@ -12,46 +15,6 @@ def prepare_wav_file(f):
     f.setframerate(_sample_rate)
     f.setnchannels(1)
     f.setsampwidth(2)
-
-def read_from_wav(f, n, mono=False, channel=0):
-    """
-    Returns a bytearray from a wav file on the given channel (the other channel is discarded)
-
-    # Standard for the wav file format
-    # https://web.archive.org/web/20140221054954/http://home.roadrunner.com/~jgglatt/tech/wave.htm
-    # Drop right half of audio
-    """
-    b = f.readframes(_BLOCK_SIZE)
-    block = np.frombuffer(b, dtype=np.int16)
-    if mono:
-        return block
-
-    block = np.reshape(block, (int(block.shape[0] / 2), 2))
-    return block[:,channel]
-
-class Effect:
-    """
-    Base (abstract) class for applying effects to audio
-
-    Attributes:
-    - sample_rate: Sample rate for all audio
-    """
-
-    def __init__(self, sample_rate):
-        self.sample_rate = sample_rate
-        pass
-
-    def process_mono(self, audio):
-        """
-        Applies an effect to (mono) audio
-
-        Arguments:
-        - audio: Numpy array of samples to process
-        
-        Returns:
-        - Numpy array of the processed audio
-        """
-        pass
 
 class Distortion(Effect):
     """
