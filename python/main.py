@@ -3,6 +3,7 @@ import argparse
 import basic_oscillator
 import distortion
 import reverb
+import delay
 
 WAVS = "../wavs/"
 
@@ -29,6 +30,14 @@ def parse():
     rvb.add_argument('output_audio')
     rvb.add_argument('--test', action="store_true")
     rvb.set_defaults(func=reverb.main)
+
+    dly = subparsers.add_parser("delay", help="Apply delay")
+    dly.add_argument('input_audio')
+    dly.add_argument('output_audio')
+    dly.add_argument('--time', default=0.1, type=float, help="Delay time seconds")
+    dly.add_argument('--feedback', default=0.3, type=float, help="Delay feedback")
+    dly.add_argument('--mix', default=0.5, type=float, help="Delay mix - 0 is Dry")
+    dly.set_defaults(func=delay.main)
 
     return parser.parse_args()
 
