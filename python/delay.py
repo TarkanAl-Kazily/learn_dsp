@@ -21,7 +21,7 @@ def prepare_wav_file(f):
 
 class MonoDelay(Effect):
     """
-    A baseic Delay algorithm.
+    A basic Delay algorithm.
 
     Attributes:
     - time: The time in seconds to delay the audio
