@@ -1,9 +1,10 @@
 import argparse
 
 import basic_oscillator
+import basic_signals
+import delay
 import distortion
 import reverb
-import delay
 
 WAVS = "../wavs/"
 
@@ -18,6 +19,11 @@ def parse():
     bosc.add_argument('filename')
     bosc.add_argument('-f', '--frequency', default=440.0, type=float)
     bosc.set_defaults(func=basic_oscillator.main)
+
+    signals = subparsers.add_parser("basic_signals", help="Generate basic signals")
+    signals.add_argument('filename')
+    signals.add_argument('-t', '--signal-type', choices=[1, 2, 3, 4, 5], type=int)
+    signals.set_defaults(func=basic_signals.main)
 
     dist = subparsers.add_parser("distortion", help="Apply distortion")
     dist.add_argument('input_audio')
